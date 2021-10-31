@@ -48,11 +48,13 @@ async function run() {
             // console.log("A document was inserted with the _id:", result);
             res.json(result);
         });
+
         // get api
         app.get("/manageallorder", async (req, res) => {
             const manageorder = await placeBookingCollection.find({}).toArray();
             res.send(manageorder);
         });
+
         // get api for place booking
         app.get("/mybooking/:email", async (req, res) => {
             const email = req.params.email;
@@ -63,12 +65,41 @@ async function run() {
             res.send(mybooking);
         });
 
-        // post api for booking order collection
+        // delete api for my booking
+        app.delete("/mybooking/:id", async (req, res) => {
+            const bookingId = req.params.id;
+            const query = { _id: ObjectId(bookingId) };
+            const deleteBooking = await placeBookingCollection.deleteOne(query);
+            // console.log(deleteBooking);
+            res.json(deleteBooking);
+        });
 
+        // update api for status
+        app.put("/mybooking/:id", async (req, res) => {
+            const updateId = req.params.id;
+            const updatedStatus = req.body;
+            // console.log(updatedStatus);
+            const filter = { _id: ObjectId(updateId) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    status: updatedStatus.status,
+                },
+            };
+            const approvedres = await placeBookingCollection.updateOne(
+                filter,
+                updateDoc,
+                options
+            );
+            // console.log(result);
+            res.json(approvedres);
+        });
+
+        // post api for booking order collection
         app.post("/placebooking", async (req, res) => {
             const placebooking = req.body;
             const result = await placeBookingCollection.insertOne(placebooking);
-            console.log("A document was inserted with the _id:", result);
+            // console.log("A document was inserted with the _id:", result);
             res.json(result);
         });
     } finally {
